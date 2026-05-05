@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Journal" />
+<meta name="theme-color" content="#f5f1ea" />
+<title>Food Journal</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23f5f1ea'/><text x='90' y='118' font-family='Georgia,serif' font-size='90' font-style='italic' text-anchor='middle' fill='%232e3531'>j</text></svg>" />
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #f5f1ea;
+    color: #2e3531;
+    font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: contain;
+  }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .app {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 20px 100px;
+  }
+  header {
+    padding: 24px 0 20px;
+    text-align: center;
+    border-bottom: 0.5px solid #d8d2c5;
+    margin-bottom: 24px;
+  }
+  header h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 26px;
+    margin: 0;
+    color: #2e3531;
+    letter-spacing: 0.3px;
+  }
+  header .sub {
+    font-size: 12px;
+    color: #8a8378;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: #ebe5d8;
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  .tab {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 9px 8px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #8a8378;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    -webkit-appearance: none;
+  }
+  .tab.active {
+    background: #fbf8f1;
+    color: #2e3531;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(46,53,49,0.04);
+  }
+  .view { display: none; }
+  .view.active { display: block; }
+  .card {
+    background: #fbf8f1;
+    border: 0.5px solid #d8d2c5;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .meal-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .meal-btn {
+    border: 0.5px solid #d8d2c5;
+    background: #fbf8f1;
+    padding: 10px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #5c5950;
+    cursor: pointer;
+    transition: all 0.15s;
+    -webkit-appearance: none;
+  }
+  .meal-btn:active { transform: scale(0.98); }
+  .meal-btn.selected {
+    background: #2e3531;
+    color: #f5f1ea;
+    border-color: #2e3531;
+  }
+  .photo-zone {
+    border: 1px dashed #c9c2b3;
+    border-radius: 12px;
+    padding: 32px 16px;
+    text-align: center;
+    background: #f5f1ea;
+    cursor: pointer;
+    margin-bottom: 12px;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    transition: background 0.15s;
+  }
+  .photo-zone:active { background: #ebe5d8; }
+  .photo-zone .icon {
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid #8a8378;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    font-family: Georgia, serif;
+    font-style: italic;
+    color: #8a8378;
+    font-size: 18px;
+  }
+  .photo-zone .label {
+    font-size: 14px;
+    color: #5c5950;
+    margin-bottom: 2px;
+  }
+  .photo-zone .hint {
+    font-size: 12px;
+    color: #a39b8d;
+  }
+  .photo-zone img {
+    width: 100%;
+    max-height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  textarea, input[type="text"] {
+    width: 100%;
+    border: 0.5px solid #d8d2c5;
+    background: #fbf8f1;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 15px;
+    color: #2e3531;
+    resize: vertical;
+    -webkit-appearance: none;
+    transition: border-color 0.15s;
+  }
+  textarea { min-height: 70px; }
+  textarea:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: #2e3531;
+  }
+  textarea::placeholder, input::placeholder { color: #a39b8d; }
+  .primary-btn {
+    width: 100%;
+    background: #2e3531;
+    color: #f5f1ea;
+    border: none;
+    padding: 13px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 12px;
+    -webkit-appearance: none;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .primary-btn:active:not(:disabled) { transform: scale(0.99); }
+  .primary-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .secondary-btn {
+    width: 100%;
+    background: transparent;
+    color: #2e3531;
+    border: 0.5px solid #d8d2c5;
+    padding: 11px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: background 0.15s;
+  }
+  .secondary-btn:active { background: #ebe5d8; }
+  .status {
+    font-size: 12px;
+    color: #8a8378;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 16px;
+    font-style: italic;
+  }
+  .status.ok { color: #5d7c5a; }
+  .status.err { color: #a64a3a; }
+  .home-tip {
+    text-align: center;
+    font-size: 12px;
+    color: #8a8378;
+    line-height: 1.6;
+    padding: 0 12px;
+    margin-top: 8px;
+    font-style: italic;
+  }
+  .day-header {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 17px;
+    color: #5c5950;
+    margin: 22px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 0.5px solid #d8d2c5;
+  }
+  .day-header:first-child { margin-top: 4px; }
+  .entry {
+    background: #fbf8f1;
+    border: 0.5px solid #d8d2c5;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .entry img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: #ebe5d8;
+  }
+  .entry-info { flex: 1; min-width: 0; }
+  .entry-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+  .entry-meal { font-size: 14px; font-weight: 500; color: #2e3531; }
+  .entry-time { font-size: 12px; color: #a39b8d; }
+  .entry-note { font-size: 13px; color: #5c5950; line-height: 1.45; word-break: break-word; }
+  .entry-del {
+    border: none;
+    background: transparent;
+    color: #a39b8d;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    align-self: flex-start;
+    -webkit-appearance: none;
+  }
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #8a8378;
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.7;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat {
+    background: #f5f1ea;
+    padding: 14px;
+    border-radius: 10px;
+    border: 0.5px solid #d8d2c5;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #8a8378;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: Georgia, serif;
+    font-size: 24px;
+    color: #2e3531;
+  }
+  .stat-sub {
+    font-size: 13px;
+    color: #5c5950;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .review-output {
+    background: #f5f1ea;
+    border-left: 2px solid #2e3531;
+    padding: 14px 16px;
+    margin-top: 14px;
+    font-size: 14px;
+    color: #2e3531;
+    line-height: 1.65;
+    border-radius: 0 8px 8px 0;
+    white-space: pre-wrap;
+    display: none;
+  }
+  .review-output.show { display: block; }
+  .review-output strong { font-weight: 500; }
+  .section-title {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 18px;
+    color: #2e3531;
+    margin: 0 0 4px;
+  }
+  .section-blurb {
+    font-size: 13px;
+    color: #5c5950;
+    margin: 0 0 14px;
+    line-height: 1.55;
+  }
+  .backup-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .backup-row .secondary-btn { flex: 1; }
+  .backup-meta {
+    font-size: 12px;
+    color: #8a8378;
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+  }
+  .file-input { display: none; }
+  details {
+    margin-top: 14px;
+    border-top: 0.5px solid #d8d2c5;
+    padding-top: 12px;
+  }
+  summary {
+    font-size: 13px;
+    color: #8a8378;
+    cursor: pointer;
+    list-style: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before {
+    content: "+ ";
+    color: #a39b8d;
+  }
+  details[open] summary::before { content: "− "; }
+  .danger-btn {
+    width: 100%;
+    background: transparent;
+    color: #a64a3a;
+    border: 0.5px solid #d8c5c2;
+    padding: 10px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 10px;
+    -webkit-appearance: none;
+  }
+  .danger-btn:active { background: #f5e8e6; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>the journal</h1>
+    <div class="sub">Food &middot; Patterns &middot; Nudges</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="log">Log</button>
+    <button class="tab" data-tab="history">History</button>
+    <button class="tab" data-tab="review">Review</button>
+    <button class="tab" data-tab="backup">Backup</button>
+  </div>
+
+  <!-- LOG VIEW -->
+  <section class="view active" id="view-log">
+    <div class="card">
+      <div class="meal-row">
+        <button class="meal-btn" data-meal="Breakfast">Breakfast</button>
+        <button class="meal-btn" data-meal="Lunch">Lunch</button>
+      </div>
+      <div class="meal-row">
+        <button class="meal-btn" data-meal="Dinner">Dinner</button>
+        <button class="meal-btn" data-meal="Snack">Snack</button>
+      </div>
+
+      <div class="photo-zone" id="photo-zone">
+        <div id="photo-prompt">
+          <div class="icon">+</div>
+          <div class="label">Add a photo</div>
+          <div class="hint">Optional &middot; tap to use camera or library</div>
+        </div>
+        <img id="photo-preview" style="display:none" alt="" />
+      </div>
+      <input type="file" class="file-input" id="photo-input" accept="image/*" capture="environment" />
+
+      <textarea id="note-input" placeholder="What did you eat? e.g. 'eggs and toast, no veg'"></textarea>
+
+      <button class="primary-btn" id="save-btn" disabled>Save meal</button>
+      <div class="status" id="save-status"></div>
+    </div>
+
+    <div class="home-tip">
+      Add to home screen for one-tap access.<br/>In Safari: Share &rarr; Add to Home Screen.
+    </div>
+  </section>
+
+  <!-- HISTORY VIEW -->
+  <section class="view" id="view-history">
+    <div id="history-list"></div>
+  </section>
+
+  <!-- REVIEW VIEW -->
+  <section class="view" id="view-review">
+    <div class="card">
+      <h2 class="section-title">This week's pattern</h2>
+      <p class="section-blurb">A high-level look at your week. Light on numbers, focused on what's worth noticing.</p>
+      <div class="stats-grid" id="review-stats"></div>
+      <button class="primary-btn" id="review-btn">Generate this week's review</button>
+      <div class="review-output" id="review-output"></div>
+    </div>
+    <div class="card">
+      <h2 class="section-title">Want a deeper read?</h2>
+      <p class="section-blurb">For a real "where's the protein?" style nudge from a person (or Claude), use the Backup tab to export a CSV of this week's meals and paste it into a Claude chat.</p>
+    </div>
+  </section>
+
+  <!-- BACKUP VIEW -->
+  <section class="view" id="view-backup">
+    <div class="card">
+      <h2 class="section-title">Quick export</h2>
+      <p class="section-blurb">A simple text file of your meals — date, time, meal, note. No images. Opens in any spreadsheet or notes app.</p>
+      <button class="primary-btn" id="export-csv">Export as CSV</button>
+      <div class="backup-meta" id="csv-meta"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Full backup</h2>
+      <p class="section-blurb">Everything, including photos, as a single file. Save to Files or iCloud Drive. You can restore from this on another device or after clearing the app.</p>
+      <div class="backup-row">
+        <button class="secondary-btn" id="export-json">Export</button>
+        <button class="secondary-btn" id="import-json">Restore</button>
+      </div>
+      <input type="file" class="file-input" id="restore-input" accept="application/json,.json" />
+      <div class="backup-meta" id="json-meta"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Storage</h2>
+      <p class="section-blurb">Your data lives on this device only. Backups are how you keep it safe — set a reminder to export every few weeks.</p>
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="stat-label">Meals</div>
+          <div class="stat-value" id="storage-count">—</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Storage used</div>
+          <div class="stat-value" id="storage-size">—</div>
+        </div>
+      </div>
+
+      <details>
+        <summary>Danger zone</summary>
+        <button class="danger-btn" id="wipe-btn">Delete all entries</button>
+      </details>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  // --- Storage layer -------------------------------------------------------
+  const DB_KEY = "foodjournal_v1";
+  function loadAll() {
+    try {
+      const raw = localStorage.getItem(DB_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed;
+    } catch (e) {
+      console.error("load failed", e);
+      return [];
+    }
+  }
+  function saveAll(meals) {
+    try {
+      localStorage.setItem(DB_KEY, JSON.stringify(meals));
+      return true;
+    } catch (e) {
+      console.error("save failed", e);
+      return false;
+    }
+  }
+
+  // --- Helpers -------------------------------------------------------------
+  const $ = (id) => document.getElementById(id);
+  const fmtDate = (ts) => {
+    const d = new Date(ts);
+    const today = new Date();
+    const yest = new Date(Date.now() - 86400000);
+    if (d.toDateString() === today.toDateString()) return "Today";
+    if (d.toDateString() === yest.toDateString()) return "Yesterday";
+    return d.toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "short",
+      day: "numeric"
+    });
+  };
+  const fmtTime = (ts) =>
+    new Date(ts).toLocaleTimeString(undefined, {
+      hour: "numeric",
+      minute: "2-digit"
+    });
+  const fmtBytes = (n) => {
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + " KB";
+    return (n / 1024 / 1024).toFixed(2) + " MB";
+  };
+
+  // --- Tab switching -------------------------------------------------------
+  document.querySelectorAll(".tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.tab;
+      document.querySelectorAll(".tab").forEach((b) =>
+        b.classList.toggle("active", b === btn)
+      );
+      document.querySelectorAll(".view").forEach((v) =>
+        v.classList.toggle("active", v.id === "view-" + target)
+      );
+      if (target === "history") renderHistory();
+      if (target === "review") renderReviewStats();
+      if (target === "backup") renderStorageStats();
+    });
+  });
+
+  // --- Logging -------------------------------------------------------------
+  let selectedMeal = null;
+  let photoData = null;
+
+  document.querySelectorAll(".meal-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedMeal = btn.dataset.meal;
+      document.querySelectorAll(".meal-btn").forEach((b) =>
+        b.classList.toggle("selected", b === btn)
+      );
+      checkSaveReady();
+    });
+  });
+
+  $("photo-zone").addEventListener("click", () => $("photo-input").click());
+
+  $("photo-input").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        // Compress: longest side 800px, jpeg quality 0.7
+        const canvas = document.createElement("canvas");
+        const maxDim = 800;
+        let { width, height } = img;
+        if (width > height && width > maxDim) {
+          height = Math.round(height * (maxDim / width));
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round(width * (maxDim / height));
+          height = maxDim;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        photoData = canvas.toDataURL("image/jpeg", 0.7);
+        $("photo-preview").src = photoData;
+        $("photo-preview").style.display = "block";
+        $("photo-prompt").style.display = "none";
+        checkSaveReady();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function checkSaveReady() {
+    const note = $("note-input").value.trim();
+    $("save-btn").disabled = !(selectedMeal && (photoData || note.length > 0));
+  }
+
+  $("note-input").addEventListener("input", checkSaveReady);
+
+  function setStatus(msg, kind) {
+    const el = $("save-status");
+    el.textContent = msg;
+    el.className = "status" + (kind ? " " + kind : "");
+    if (msg) setTimeout(() => { if (el.textContent === msg) { el.textContent = ""; el.className = "status"; } }, 2400);
+  }
+
+  $("save-btn").addEventListener("click", () => {
+    const note = $("note-input").value.trim();
+    if (!selectedMeal || (!photoData && !note)) return;
+    const meals = loadAll();
+    meals.push({
+      id: "m_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+      timestamp: Date.now(),
+      meal: selectedMeal,
+      photo: photoData || null,
+      note: note
+    });
+    if (!saveAll(meals)) {
+      setStatus("Couldn't save — storage may be full. Try a backup and clear old entries.", "err");
+      return;
+    }
+    // Reset form
+    selectedMeal = null;
+    photoData = null;
+    $("photo-input").value = "";
+    $("photo-preview").style.display = "none";
+    $("photo-prompt").style.display = "block";
+    $("note-input").value = "";
+    document.querySelectorAll(".meal-btn").forEach((b) => b.classList.remove("selected"));
+    $("save-btn").disabled = true;
+    setStatus("Saved.", "ok");
+  });
+
+  // --- History -------------------------------------------------------------
+  function renderHistory() {
+    const list = $("history-list");
+    const meals = loadAll().sort((a, b) => b.timestamp - a.timestamp);
+    if (!meals.length) {
+      list.innerHTML =
+        '<div class="empty">Nothing here yet.<br/>Snap your first meal in the Log tab.</div>';
+      return;
+    }
+    const groups = {};
+    meals.forEach((m) => {
+      const key = fmtDate(m.timestamp);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(m);
+    });
+    list.innerHTML = "";
+    Object.keys(groups).forEach((dayLabel) => {
+      const head = document.createElement("div");
+      head.className = "day-header";
+      head.textContent = dayLabel;
+      list.appendChild(head);
+      groups[dayLabel].forEach((m) => {
+        const row = document.createElement("div");
+        row.className = "entry";
+        if (m.photo) {
+          const img = document.createElement("img");
+          img.src = m.photo;
+          img.alt = "";
+          row.appendChild(img);
+        } else {
+          const placeholder = document.createElement("div");
+          placeholder.style.cssText = "width: 64px; height: 64px; border-radius: 8px; flex-shrink: 0; background: #ebe5d8; display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-style: italic; color: #a39b8d; font-size: 22px;";
+          placeholder.textContent = m.meal[0];
+          row.appendChild(placeholder);
+        }
+        const info = document.createElement("div");
+        info.className = "entry-info";
+        const head2 = document.createElement("div");
+        head2.className = "entry-head";
+        const meal = document.createElement("span");
+        meal.className = "entry-meal";
+        meal.textContent = m.meal;
+        const time = document.createElement("span");
+        time.className = "entry-time";
+        time.textContent = fmtTime(m.timestamp);
+        head2.appendChild(meal);
+        head2.appendChild(time);
+        const note = document.createElement("div");
+        note.className = "entry-note";
+        note.textContent = m.note || "—";
+        info.appendChild(head2);
+        info.appendChild(note);
+        const del = document.createElement("button");
+        del.className = "entry-del";
+        del.textContent = "×";
+        del.setAttribute("aria-label", "Delete entry");
+        del.addEventListener("click", () => {
+          if (!confirm("Delete this entry?")) return;
+          const remaining = loadAll().filter((x) => x.id !== m.id);
+          saveAll(remaining);
+          renderHistory();
+        });
+        row.appendChild(info);
+        row.appendChild(del);
+        list.appendChild(row);
+      });
+    });
+  }
+
+  // --- Review --------------------------------------------------------------
+  function renderReviewStats() {
+    const stats = $("review-stats");
+    const meals = loadAll();
+    const weekAgo = Date.now() - 7 * 86400000;
+    const recent = meals.filter((m) => m.timestamp >= weekAgo);
+    const counts = { Breakfast: 0, Lunch: 0, Dinner: 0, Snack: 0 };
+    recent.forEach((m) => {
+      counts[m.meal] = (counts[m.meal] || 0) + 1;
+    });
+    const days = new Set(
+      recent.map((m) => new Date(m.timestamp).toDateString())
+    ).size;
+    stats.innerHTML = `
+      <div class="stat">
+        <div class="stat-label">Last 7 days</div>
+        <div class="stat-value">${recent.length}</div>
+        <div class="stat-sub">${recent.length === 1 ? "meal logged" : "meals logged"} across ${days} ${days === 1 ? "day" : "days"}</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Breakdown</div>
+        <div class="stat-sub" style="margin-top: 6px;">Breakfast &middot; ${counts.Breakfast}<br/>Lunch &middot; ${counts.Lunch}<br/>Dinner &middot; ${counts.Dinner}<br/>Snack &middot; ${counts.Snack}</div>
+      </div>
+    `;
+    $("review-btn").disabled = recent.length === 0;
+  }
+
+  $("review-btn").addEventListener("click", () => {
+    const meals = loadAll();
+    const weekAgo = Date.now() - 7 * 86400000;
+    const recent = meals.filter((m) => m.timestamp >= weekAgo);
+    if (!recent.length) return;
+    const review = generateReview(recent);
+    const out = $("review-output");
+    out.innerHTML = review;
+    out.classList.add("show");
+  });
+
+  // Local heuristic review — keyword-based, gentle, no calorie talk.
+  function generateReview(meals) {
+    const notes = meals.map((m) => (m.note || "").toLowerCase()).join(" ");
+    const total = meals.length;
+
+    const proteinWords = ["chicken", "beef", "pork", "fish", "salmon", "tuna", "shrimp", "egg", "tofu", "tempeh", "lentil", "bean", "chickpea", "yogurt", "yoghurt", "cheese", "turkey", "lamb", "protein", "paneer", "quinoa", "edamame", "nuts", "almond", "peanut"];
+    const vegWords = ["salad", "veg", "broccoli", "spinach", "kale", "tomato", "carrot", "pepper", "onion", "cucumber", "lettuce", "rocket", "arugula", "cabbage", "courgette", "zucchini", "aubergine", "eggplant", "mushroom", "greens", "asparagus", "cauliflower", "beetroot"];
+    const fruitWords = ["apple", "banana", "berry", "berries", "orange", "fruit", "mango", "pear", "grape", "melon", "peach", "plum", "kiwi", "pineapple"];
+    const carbWords = ["bread", "toast", "pasta", "rice", "noodle", "potato", "cereal", "bagel", "wrap", "pizza", "couscous"];
+    const sweetWords = ["chocolate", "cookie", "cake", "biscuit", "ice cream", "candy", "sweet", "donut", "doughnut", "pastry", "muffin"];
+    const friedWords = ["fried", "fries", "chips", "crisps", "takeaway", "takeout"];
+
+    function count(words) {
+      let c = 0;
+      words.forEach((w) => {
+        // Count occurrences across all notes
+        const re = new RegExp("\\b" + w + "\\b", "g");
+        const matches = notes.match(re);
+        if (matches) c += matches.length;
+      });
+      return c;
+    }
+
+    const proteinHits = count(proteinWords);
+    const vegHits = count(vegWords);
+    const fruitHits = count(fruitWords);
+    const carbHits = count(carbWords);
+    const sweetHits = count(sweetWords);
+    const friedHits = count(friedWords);
+
+    const observations = [];
+    const wins = [];
+    const nudges = [];
+
+    // Notes coverage
+    const withNotes = meals.filter((m) => m.note && m.note.trim().length > 2).length;
+    if (withNotes < total / 2) {
+      observations.push("About half your entries have no note. The reviews get sharper when you scribble even three words about each meal.");
+    }
+
+    // Protein
+    const proteinRatio = proteinHits / Math.max(total, 1);
+    if (proteinRatio >= 0.7) {
+      wins.push("Protein is showing up consistently across your meals — that's the habit you said you were building, and it's holding.");
+    } else if (proteinRatio >= 0.3) {
+      nudges.push("Protein is in some meals but not all. The classic gap is breakfast — a couple of eggs, Greek yoghurt, or last night's leftovers can fill it.");
+    } else {
+      nudges.push("Protein looks light this week. Your nutritionist's nudge applies: pick one source (eggs, fish, beans, yoghurt, chicken) and aim for it in every meal.");
+    }
+
+    // Vegetables
+    if (vegHits >= total * 0.5) {
+      wins.push("Vegetables are present across the week — keep that going.");
+    } else if (vegHits >= 2) {
+      nudges.push("Vegetables show up here and there. An easy win: add a handful of greens or a side salad to lunches and dinners.");
+    } else {
+      nudges.push("Vegetables are barely in the picture this week. No need for a salad fixation — even frozen peas, a tomato, or roasted veg alongside a meal counts.");
+    }
+
+    // Fruit (light positive only)
+    if (fruitHits >= 3) {
+      wins.push("Fruit is a regular feature, which is a quietly good habit.");
+    }
+
+    // Sweets / fried
+    if (sweetHits >= 4) {
+      observations.push("Sweet things appear fairly often. Not a problem on its own — worth noticing the pattern though, especially if it tends to be late afternoon or after dinner.");
+    }
+    if (friedHits >= 3) {
+      observations.push("Fried or takeaway food appeared a few times. Might be worth thinking about whether that's a busy-week pattern or a default.");
+    }
+
+    // Carb-only meals
+    if (carbHits > proteinHits * 1.5 && carbHits >= 4) {
+      nudges.push("Lots of carbs (bread, pasta, rice) without an obvious protein partner. Pairing them with a protein source helps with steadier energy.");
+    }
+
+    // Build output
+    let html = "";
+    html += `<strong>The week at a glance.</strong>\n${total} meals over ${new Set(meals.map(m => new Date(m.timestamp).toDateString())).size} days.\n\n`;
+
+    if (wins.length) {
+      html += `<strong>Going well.</strong>\n${wins.map(w => "• " + w).join("\n")}\n\n`;
+    }
+    if (nudges.length) {
+      html += `<strong>Worth a nudge.</strong>\n${nudges.map(n => "• " + n).join("\n")}\n\n`;
+    }
+    if (observations.length) {
+      html += `<strong>Worth noticing.</strong>\n${observations.map(o => "• " + o).join("\n")}\n\n`;
+    }
+    if (!wins.length && !nudges.length && !observations.length) {
+      html += "Not enough text in your notes to say much yet. Try adding a few words to each meal — even 'eggs and toast' or 'salad with chicken' gives the review something to work with.";
+    } else {
+      html += `<em>This is a quick local read based on your notes — for a deeper analysis, export your week as CSV and share with a real nutritionist or paste into a Claude chat for the "where's the protein?" treatment.</em>`;
+    }
+
+    return html;
+  }
+
+  // --- Backup --------------------------------------------------------------
+  function csvEscape(s) {
+    if (s == null) return "";
+    const str = String(s);
+    if (/[",\n]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
+    return str;
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  }
+
+  $("export-csv").addEventListener("click", () => {
+    const meals = loadAll().sort((a, b) => a.timestamp - b.timestamp);
+    if (!meals.length) {
+      $("csv-meta").textContent = "Nothing to export yet.";
+      return;
+    }
+    const header = ["Date", "Time", "Meal", "Note"];
+    const rows = meals.map((m) => {
+      const d = new Date(m.timestamp);
+      return [
+        d.toLocaleDateString("en-CA"), // YYYY-MM-DD, sortable
+        d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false }),
+        m.meal,
+        m.note || ""
+      ].map(csvEscape).join(",");
+    });
+    const csv = [header.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadBlob(blob, `food-journal-${stamp}.csv`);
+    $("csv-meta").textContent = `Exported ${meals.length} ${meals.length === 1 ? "entry" : "entries"}.`;
+  });
+
+  $("export-json").addEventListener("click", () => {
+    const meals = loadAll();
+    if (!meals.length) {
+      $("json-meta").textContent = "Nothing to export yet.";
+      return;
+    }
+    const payload = {
+      app: "food-journal",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      meals: meals
+    };
+    const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadBlob(blob, `food-journal-backup-${stamp}.json`);
+    $("json-meta").textContent = `Backed up ${meals.length} ${meals.length === 1 ? "entry" : "entries"}, including photos.`;
+  });
+
+  $("import-json").addEventListener("click", () => $("restore-input").click());
+
+  $("restore-input").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data || !Array.isArray(data.meals)) throw new Error("not a journal file");
+        const existing = loadAll();
+        const existingIds = new Set(existing.map((m) => m.id));
+        const merged = existing.slice();
+        let added = 0;
+        data.meals.forEach((m) => {
+          if (m && m.id && !existingIds.has(m.id)) {
+            merged.push(m);
+            added++;
+          }
+        });
+        if (saveAll(merged)) {
+          $("json-meta").textContent = `Restored ${added} new ${added === 1 ? "entry" : "entries"} (${data.meals.length - added} already on this device).`;
+          renderStorageStats();
+        } else {
+          $("json-meta").textContent = "Restore failed — storage may be full.";
+        }
+      } catch (err) {
+        $("json-meta").textContent = "That doesn't look like a valid backup file.";
+      }
+      $("restore-input").value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  function renderStorageStats() {
+    const meals = loadAll();
+    $("storage-count").textContent = meals.length;
+    try {
+      const raw = localStorage.getItem(DB_KEY) || "";
+      // Approximate UTF-16 size in bytes
+      $("storage-size").textContent = fmtBytes(raw.length * 2);
+    } catch (e) {
+      $("storage-size").textContent = "—";
+    }
+  }
+
+  $("wipe-btn").addEventListener("click", () => {
+    if (!confirm("Delete every meal in this journal? This cannot be undone — export a backup first if you want to keep them.")) return;
+    if (!confirm("Really delete everything?")) return;
+    saveAll([]);
+    renderStorageStats();
+    alert("All entries deleted.");
+  });
+
+  // --- Init ----------------------------------------------------------------
+  renderStorageStats();
+})();
+</script>
+</body>
+</html>
